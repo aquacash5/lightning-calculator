@@ -15,7 +15,7 @@ main : Program () Model Msg
 main =
     Browser.element
         { init = init
-        , subscriptions = subscriptions
+        , subscriptions = always Sub.none
         , update = update
         , view = view
         }
@@ -32,16 +32,14 @@ type AppState
 
 
 type alias Model =
-    { curTime : Time.Posix
-    , timezone : Time.Zone
+    { timezone : Time.Zone
     , state : AppState
     }
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { curTime = Time.millisToPosix 0
-      , timezone = Time.utc
+    ( { timezone = Time.utc
       , state = Base
       }
     , Task.perform AdjustTimeZone Time.here
@@ -53,37 +51,43 @@ init _ =
 
 
 type Msg
-    = SawLightning
+    = AdjustTimeZone Time.Zone
+    | SawLightning
+    | CaptureLightning Time.Posix
     | HeardThunder Time.Posix
+    | CaptureThunder Time.Posix Time.Posix
     | Reset
-    | Tick Time.Posix
-    | AdjustTimeZone Time.Zone
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Tick newTime ->
-            ( { model | curTime = newTime }
-            , Cmd.none
-            )
-
         AdjustTimeZone newZone ->
             ( { model | timezone = newZone }
             , Cmd.none
             )
 
         SawLightning ->
-            ( { model | state = Lightning model.curTime }
+            ( model
+            , Task.perform CaptureLightning Time.now
+            )
+
+        CaptureLightning curTime ->
+            ( { model | state = Lightning curTime }
             , Cmd.none
             )
 
         HeardThunder lightning ->
+            ( model
+            , Task.perform (CaptureThunder lightning) Time.now
+            )
+
+        CaptureThunder lightning curTime ->
             ( { model
                 | state =
                     Thunder
                         { start = lightning
-                        , end = model.curTime
+                        , end = curTime
                         }
               }
             , Cmd.none
@@ -91,20 +95,6 @@ update msg model =
 
         Reset ->
             ( { model | state = Base }, Cmd.none )
-
-
-
--- SUBSCRIPTIONS
-
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    case model.state of
-        Thunder _ ->
-            Sub.none
-
-        _ ->
-            Time.every 1 Tick
 
 
 
@@ -117,7 +107,6 @@ view model =
         Base ->
             div []
                 [ h1 [] [ text "Wait for the lightning" ]
-                , p [] [ text (toTimeString model.timezone model.curTime) ]
                 , button [ onClick SawLightning ] [ text "Lightning" ]
                 ]
 
@@ -125,7 +114,6 @@ view model =
             div []
                 [ h1 [] [ text "Wait for the thunder" ]
                 , p [] [ text (toTimeString model.timezone time) ]
-                , p [] [ text (toTimeString model.timezone model.curTime) ]
                 , button [ onClick (HeardThunder time) ] [ text "Thunder" ]
                 , button [ onClick Reset ] [ text "Reset" ]
                 ]
