@@ -3,6 +3,7 @@ module Main exposing (..)
 import Browser exposing (Document)
 import Html exposing (button, div, h1, p, text)
 import Html.Events exposing (onClick)
+import Round
 import Task
 import Time
 
@@ -115,16 +116,27 @@ view model =
             Lightning time ->
                 div []
                     [ h1 [] [ text "Wait for the thunder" ]
-                    , p [] [ text (toTimeString model.timezone time) ]
                     , button [ onClick (HeardThunder time) ] [ text "Thunder" ]
                     , button [ onClick Reset ] [ text "Reset" ]
                     ]
 
             Thunder strike ->
+                let
+                    diff =
+                        Time.posixToMillis strike.end - Time.posixToMillis strike.start
+
+                    fDiff =
+                        toFloat diff / 1000.0
+
+                    distance =
+                        fDiff / 5.0
+
+                    roundedDistance =
+                        Round.round 2 distance
+                in
                 div []
                     [ h1 [] [ text "Distance from the strike point" ]
-                    , p [] [ text (toTimeString model.timezone strike.start) ]
-                    , p [] [ text (toTimeString model.timezone strike.end) ]
+                    , p [] [ text (roundedDistance ++ " miles") ]
                     , button [ onClick Reset ] [ text "Reset" ]
                     ]
         ]
