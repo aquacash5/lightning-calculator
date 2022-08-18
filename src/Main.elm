@@ -1,7 +1,7 @@
 module Main exposing (..)
 
 import Browser
-import Html exposing (Html, button, div, text)
+import Html exposing (Html, button, div, h1, p, text)
 import Html.Events exposing (onClick)
 import Task
 import Time
@@ -72,6 +72,9 @@ update msg model =
             , Cmd.none
             )
 
+        SawLightning ->
+            ( { model | state = Lightning model.curTime }, Cmd.none )
+
         _ ->
             ( model, Cmd.none )
 
@@ -91,25 +94,41 @@ subscriptions _ =
 
 view : Model -> Html Msg
 view model =
+    case model.state of
+        Base ->
+            div []
+                [ h1 [] [ text "Wait for the lightning" ]
+                , p [] [ text (toTimeString model.timezone model.curTime) ]
+                , button [ onClick SawLightning ] [ text "Lightning" ]
+
+                -- , button [ onClick HeardThunder ] [ text "Thunder" ]
+                -- , button [ onClick Reset ] [ text "Reset" ]
+                ]
+
+        Lightning time ->
+            div []
+                [ h1 [] [ text "Wait for the thunder" ]
+                , p [] [ text (toTimeString model.timezone time) ]
+                , button [ onClick HeardThunder ] [ text "Thunder" ]
+                , button [ onClick Reset ] [ text "Reset" ]
+
+                -- , button [ onClick HeardThunder ] [ text "Thunder" ]
+                ]
+
+
+toTimeString : Time.Zone -> Time.Posix -> String
+toTimeString zone posix =
     let
         hour =
-            String.fromInt (Time.toHour model.timezone model.curTime)
+            String.fromInt (Time.toHour zone posix)
                 |> String.padLeft 2 '0'
 
         minute =
-            String.fromInt (Time.toMinute model.timezone model.curTime)
+            String.fromInt (Time.toMinute zone posix)
                 |> String.padLeft 2 '0'
 
         second =
-            String.fromInt (Time.toSecond model.timezone model.curTime)
+            String.fromInt (Time.toSecond zone posix)
                 |> String.padLeft 2 '0'
-
-        time =
-            hour ++ ":" ++ minute ++ ":" ++ second
     in
-    div []
-        [ div [] [ text ("Wait for the lightning: " ++ time) ]
-        , button [ onClick SawLightning ] [ text "Lightning" ]
-        , button [ onClick HeardThunder ] [ text "Thunder" ]
-        , button [ onClick Reset ] [ text "Reset" ]
-        ]
+    hour ++ ":" ++ minute ++ ":" ++ second
