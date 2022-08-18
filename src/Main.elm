@@ -1,7 +1,7 @@
 module Main exposing (..)
 
-import Browser
-import Html exposing (Html, button, div, h1, p, text)
+import Browser exposing (Document)
+import Html exposing (button, div, h1, p, text)
 import Html.Events exposing (onClick)
 import Task
 import Time
@@ -13,7 +13,7 @@ import Time
 
 main : Program () Model Msg
 main =
-    Browser.element
+    Browser.document
         { init = init
         , subscriptions = always Sub.none
         , update = update
@@ -101,30 +101,34 @@ update msg model =
 -- VIEW
 
 
-view : Model -> Html Msg
+view : Model -> Document Msg
 view model =
-    case model.state of
-        Base ->
-            div []
-                [ h1 [] [ text "Wait for the lightning" ]
-                , button [ onClick SawLightning ] [ text "Lightning" ]
-                ]
+    { title = "Lightning Distance Calculator"
+    , body =
+        [ case model.state of
+            Base ->
+                div []
+                    [ h1 [] [ text "Wait for the lightning" ]
+                    , button [ onClick SawLightning ] [ text "Lightning" ]
+                    ]
 
-        Lightning time ->
-            div []
-                [ h1 [] [ text "Wait for the thunder" ]
-                , p [] [ text (toTimeString model.timezone time) ]
-                , button [ onClick (HeardThunder time) ] [ text "Thunder" ]
-                , button [ onClick Reset ] [ text "Reset" ]
-                ]
+            Lightning time ->
+                div []
+                    [ h1 [] [ text "Wait for the thunder" ]
+                    , p [] [ text (toTimeString model.timezone time) ]
+                    , button [ onClick (HeardThunder time) ] [ text "Thunder" ]
+                    , button [ onClick Reset ] [ text "Reset" ]
+                    ]
 
-        Thunder strike ->
-            div []
-                [ h1 [] [ text "Distance from the strike point" ]
-                , p [] [ text (toTimeString model.timezone strike.start) ]
-                , p [] [ text (toTimeString model.timezone strike.end) ]
-                , button [ onClick Reset ] [ text "Reset" ]
-                ]
+            Thunder strike ->
+                div []
+                    [ h1 [] [ text "Distance from the strike point" ]
+                    , p [] [ text (toTimeString model.timezone strike.start) ]
+                    , p [] [ text (toTimeString model.timezone strike.end) ]
+                    , button [ onClick Reset ] [ text "Reset" ]
+                    ]
+        ]
+    }
 
 
 toTimeString : Time.Zone -> Time.Posix -> String
