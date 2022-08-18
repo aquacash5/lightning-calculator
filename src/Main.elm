@@ -28,6 +28,7 @@ main =
 type AppState
     = Base
     | Lightning Time.Posix
+    | Thunder { start : Time.Posix, end : Time.Posix }
 
 
 type alias Model =
@@ -53,7 +54,7 @@ init _ =
 
 type Msg
     = SawLightning
-    | HeardThunder
+    | HeardThunder Time.Posix
     | Reset
     | Tick Time.Posix
     | AdjustTimeZone Time.Zone
@@ -73,7 +74,20 @@ update msg model =
             )
 
         SawLightning ->
-            ( { model | state = Lightning model.curTime }, Cmd.none )
+            ( { model | state = Lightning model.curTime }
+            , Cmd.none
+            )
+
+        HeardThunder lightning ->
+            ( { model
+                | state =
+                    Thunder
+                        { start = lightning
+                        , end = model.curTime
+                        }
+              }
+            , Cmd.none
+            )
 
         _ ->
             ( model, Cmd.none )
@@ -85,7 +99,7 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    Time.every 100 Tick
+    Time.every 1 Tick
 
 
 
@@ -100,19 +114,23 @@ view model =
                 [ h1 [] [ text "Wait for the lightning" ]
                 , p [] [ text (toTimeString model.timezone model.curTime) ]
                 , button [ onClick SawLightning ] [ text "Lightning" ]
-
-                -- , button [ onClick HeardThunder ] [ text "Thunder" ]
-                -- , button [ onClick Reset ] [ text "Reset" ]
                 ]
 
         Lightning time ->
             div []
                 [ h1 [] [ text "Wait for the thunder" ]
                 , p [] [ text (toTimeString model.timezone time) ]
-                , button [ onClick HeardThunder ] [ text "Thunder" ]
+                , p [] [ text (toTimeString model.timezone model.curTime) ]
+                , button [ onClick (HeardThunder time) ] [ text "Thunder" ]
                 , button [ onClick Reset ] [ text "Reset" ]
+                ]
 
-                -- , button [ onClick HeardThunder ] [ text "Thunder" ]
+        Thunder strike ->
+            div []
+                [ h1 [] [ text "Distance from the strike point" ]
+                , p [] [ text (toTimeString model.timezone strike.start) ]
+                , p [] [ text (toTimeString model.timezone strike.end) ]
+                , button [ onClick Reset ] [ text "Reset" ]
                 ]
 
 
@@ -120,15 +138,15 @@ toTimeString : Time.Zone -> Time.Posix -> String
 toTimeString zone posix =
     let
         hour =
-            String.fromInt (Time.toHour zone posix)
-                |> String.padLeft 2 '0'
+            String.fromInt (Time.toHour zone posix) |> String.padLeft 2 '0'
 
         minute =
-            String.fromInt (Time.toMinute zone posix)
-                |> String.padLeft 2 '0'
+            String.fromInt (Time.toMinute zone posix) |> String.padLeft 2 '0'
 
         second =
-            String.fromInt (Time.toSecond zone posix)
-                |> String.padLeft 2 '0'
+            String.fromInt (Time.toSecond zone posix) |> String.padLeft 2 '0'
+
+        millis =
+            String.fromInt (Time.toMillis zone posix) |> String.padLeft 3 '0'
     in
-    hour ++ ":" ++ minute ++ ":" ++ second
+    hour ++ ":" ++ minute ++ ":" ++ second ++ ":" ++ millis
