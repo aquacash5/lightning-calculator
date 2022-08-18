@@ -89,8 +89,8 @@ update msg model =
             , Cmd.none
             )
 
-        _ ->
-            ( model, Cmd.none )
+        Reset ->
+            ( { model | state = Base }, Cmd.none )
 
 
 
@@ -98,8 +98,13 @@ update msg model =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions _ =
-    Time.every 1 Tick
+subscriptions model =
+    case model.state of
+        Thunder _ ->
+            Sub.none
+
+        _ ->
+            Time.every 1 Tick
 
 
 
