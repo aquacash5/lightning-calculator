@@ -1,7 +1,8 @@
 module Main exposing (..)
 
-import Browser exposing (Document)
-import Html exposing (button, div, h1, p, text)
+import Browser
+import Html exposing (Html, a, button, div, h1, img, p, text)
+import Html.Attributes exposing (alt, class, href, src, style, target, title)
 import Html.Events exposing (onClick)
 import Round
 import Task
@@ -14,7 +15,7 @@ import Time
 
 main : Program () Model Msg
 main =
-    Browser.document
+    Browser.element
         { init = init
         , subscriptions = always Sub.none
         , update = update
@@ -102,23 +103,75 @@ update msg model =
 -- VIEW
 
 
-view : Model -> Document Msg
+view : Model -> Html Msg
 view model =
-    { title = "Lightning Distance Calculator"
-    , body =
-        [ case model.state of
-            Base ->
-                div []
-                    [ h1 [] [ text "Wait for the lightning" ]
-                    , button [ onClick SawLightning ] [ text "Lightning" ]
+    div [ class "container" ]
+        [ div [ class "text-center" ] [ logo, viewState model ]
+        , div [ class "fixed-bottom m-2" ]
+            [ div [ class "row" ]
+                [ div [ class "col order-md-last" ]
+                    [ div [ class "float-md-end" ]
+                        [ text "Lightning Distance Calculator by "
+                        , a
+                            [ href "https://github.com/aquacash5/"
+                            , target "_blank"
+                            , title "Github"
+                            ]
+                            [ text "Kyle Bloom" ]
+                        ]
                     ]
+                , div [ class "w-100 d-md-none d-block" ] []
+                , div [ class "col" ]
+                    [ text "Lightning by b a r z i n from "
+                    , a
+                        [ href "https://thenounproject.com/icon/lightning-759722/"
+                        , target "_blank"
+                        , title "Lightning Icons"
+                        ]
+                        [ text "Noun Project" ]
+                    ]
+                ]
+            ]
+        ]
+
+
+logo : Html Msg
+logo =
+    img
+        [ src "images/lightning.png"
+        , alt "Lightning"
+        , style "max-height" "300px"
+        , style "max-width" "300px"
+        ]
+        []
+
+
+viewState : Model -> Html Msg
+viewState model =
+    div [ class "vstack gap-3 col-md-6 mx-auto" ]
+        (case model.state of
+            Base ->
+                [ h1 [] [ text "Wait for the lightning" ]
+                , button
+                    [ class "btn btn-primary btn-lg"
+                    , onClick SawLightning
+                    ]
+                    [ text "Lightning" ]
+                ]
 
             Lightning time ->
-                div []
-                    [ h1 [] [ text "Wait for the thunder" ]
-                    , button [ onClick (HeardThunder time) ] [ text "Thunder" ]
-                    , button [ onClick Reset ] [ text "Reset" ]
+                [ h1 [] [ text "Wait for the thunder" ]
+                , button
+                    [ class "btn btn-primary btn-lg"
+                    , onClick (HeardThunder time)
                     ]
+                    [ text "Thunder" ]
+                , button
+                    [ class "btn btn-outline-danger btn-lg"
+                    , onClick Reset
+                    ]
+                    [ text "Reset" ]
+                ]
 
             Thunder strike ->
                 let
@@ -134,13 +187,16 @@ view model =
                     roundedDistance =
                         Round.round 2 distance
                 in
-                div []
-                    [ h1 [] [ text "Distance from the strike point" ]
-                    , p [] [ text (roundedDistance ++ " miles") ]
-                    , button [ onClick Reset ] [ text "Reset" ]
+                [ h1 [] [ text "Distance from the lightning" ]
+                , button
+                    [ class "btn btn-outline-danger btn-lg"
+                    , onClick Reset
                     ]
-        ]
-    }
+                    [ text "Reset" ]
+                , p [ class "" ] [ text (roundedDistance ++ " miles") ]
+                , p [ class "" ] [ text (String.fromFloat fDiff ++ " seconds") ]
+                ]
+        )
 
 
 toTimeString : Time.Zone -> Time.Posix -> String
