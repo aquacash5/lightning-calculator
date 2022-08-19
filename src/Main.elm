@@ -105,49 +105,6 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div [ class "container" ]
-        [ div [ class "text-center" ] [ logo, viewState model ]
-        , div [ class "fixed-bottom m-2" ]
-            [ div [ class "row" ]
-                [ div [ class "col order-md-last" ]
-                    [ div [ class "float-md-end" ]
-                        [ text "Lightning Distance Calculator by "
-                        , a
-                            [ href "https://github.com/aquacash5/"
-                            , target "_blank"
-                            , title "Github"
-                            ]
-                            [ text "Kyle Bloom" ]
-                        ]
-                    ]
-                , div [ class "w-100 d-md-none d-block" ] []
-                , div [ class "col" ]
-                    [ text "Lightning by b a r z i n from "
-                    , a
-                        [ href "https://thenounproject.com/icon/lightning-759722/"
-                        , target "_blank"
-                        , title "Lightning Icons"
-                        ]
-                        [ text "Noun Project" ]
-                    ]
-                ]
-            ]
-        ]
-
-
-logo : Html Msg
-logo =
-    img
-        [ src "images/lightning.png"
-        , alt "Lightning"
-        , style "max-height" "300px"
-        , style "max-width" "300px"
-        ]
-        []
-
-
-viewState : Model -> Html Msg
-viewState model =
     div [ class "vstack gap-3 col-md-6 mx-auto" ]
         (case model.state of
             Base ->
@@ -167,7 +124,7 @@ viewState model =
                     ]
                     [ text "Thunder" ]
                 , button
-                    [ class "btn btn-outline-danger btn-lg"
+                    [ class "btn btn-danger btn-lg"
                     , onClick Reset
                     ]
                     [ text "Reset" ]
@@ -189,7 +146,7 @@ viewState model =
                 in
                 [ h1 [] [ text "Distance from the lightning" ]
                 , button
-                    [ class "btn btn-outline-danger btn-lg"
+                    [ class "btn btn-danger btn-lg"
                     , onClick Reset
                     ]
                     [ text "Reset" ]
