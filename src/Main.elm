@@ -1,8 +1,8 @@
 module Main exposing (..)
 
 import Browser
-import Html exposing (Html, a, button, div, h1, img, p, text)
-import Html.Attributes exposing (alt, class, href, src, style, target, title)
+import Html exposing (Html, button, div, h1, p, text)
+import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Round
 import Task
